@@ -31,6 +31,7 @@ import pythagoras.i.Rectangle;
 import playn.core.InternalTransform;
 import playn.core.StockInternalTransform;
 import playn.core.Tint;
+import playn.core.gl.BlendMode;
 import playn.core.gl.GL20;
 import playn.core.gl.GLBuffer;
 import playn.core.gl.GLContext;
@@ -302,12 +303,8 @@ public class IOSGLContext extends GLContext {
   }
 
   // TODO: Implement masking for iOS.
-
-  @Override public void setMaskBlending() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override public void setNormalBlending() {
+  @Override
+  protected void applyBlendMode(BlendMode mode) {
     throw new UnsupportedOperationException();
   }
 

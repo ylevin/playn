@@ -42,6 +42,7 @@ public class GL20Context extends GLContext {
     super(platform, scaleFactor);
     this.gl = gl;
     this.checkErrors = checkErrors;
+    this.blendMode = GL20BlendMode.NORMAL;
     // create our root transform with our scale factor
     rootXform = createTransform();
     rootXform.uniformScale(scaleFactor);
@@ -50,7 +51,7 @@ public class GL20Context extends GLContext {
   public void init() {
     gl.glDisable(GL_CULL_FACE);
     gl.glEnable(GL_BLEND);
-    setNormalBlending();
+    applyBlendMode(blendMode);
     gl.glClearColor(0, 0, 0, 1);
     if (quadShader != null) {
       quadShader.clearProgram();
@@ -158,7 +159,7 @@ public class GL20Context extends GLContext {
                            boolean repeatX, boolean repeatY, boolean mm) {
     int tex = createTexture(repeatX, repeatY, mm);
     gl.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                    (ByteBuffer) null);
+        (ByteBuffer) null);
     return tex;
   }
 
@@ -200,18 +201,6 @@ public class GL20Context extends GLContext {
     Rectangle r = popScissorState();
     if (r == null) gl.glDisable(GL_SCISSOR_TEST);
     else gl.glScissor(r.x, r.y, r.width, r.height);
-  }
-
-  @Override
-  public void setMaskBlending() {
-    flush();
-    gl.glBlendFunc(GL_ZERO, GL_SRC_ALPHA);
-  }
-
-  @Override
-  public void setNormalBlending() {
-    flush();
-    gl.glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   }
 
   @Override
@@ -260,6 +249,11 @@ public class GL20Context extends GLContext {
   @Override
   protected GLShader trisShader() {
     return trisShader;
+  }
+
+  @Override
+  protected void applyBlendMode(BlendMode mode) {
+    ((GL20BlendMode) mode).apply(gl);
   }
 
   private static int toGL(Filter filter) {

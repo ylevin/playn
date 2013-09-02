@@ -72,6 +72,7 @@ public abstract class GLContext {
   private int pushedFramebuffer = -1, pushedWidth, pushedHeight;
   private List<Rectangle> scissors = new ArrayList<Rectangle>();
   private int scissorDepth;
+  protected BlendMode blendMode;
 
   /** The (actual screen pixel) width and height of our default frame buffer. */
   protected int defaultFbufWidth, defaultFbufHeight;
@@ -451,6 +452,13 @@ public abstract class GLContext {
   protected abstract GLShader quadShader();
   protected abstract GLShader trisShader();
 
-  public abstract void setMaskBlending();
-  public abstract void setNormalBlending();
+  protected abstract void applyBlendMode(BlendMode mode);
+
+  public void setBlendMode(BlendMode mode) {
+    if (blendMode != mode) {
+      flush();
+      applyBlendMode(mode);
+      blendMode = mode;
+    }
+  }
 }
