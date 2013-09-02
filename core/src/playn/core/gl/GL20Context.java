@@ -50,7 +50,7 @@ public class GL20Context extends GLContext {
   public void init() {
     gl.glDisable(GL_CULL_FACE);
     gl.glEnable(GL_BLEND);
-    gl.glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    setNormalBlending();
     gl.glClearColor(0, 0, 0, 1);
     if (quadShader != null) {
       quadShader.clearProgram();
@@ -200,6 +200,18 @@ public class GL20Context extends GLContext {
     Rectangle r = popScissorState();
     if (r == null) gl.glDisable(GL_SCISSOR_TEST);
     else gl.glScissor(r.x, r.y, r.width, r.height);
+  }
+
+  @Override
+  public void setMaskBlending() {
+    flush();
+    gl.glBlendFunc(GL_ZERO, GL_SRC_ALPHA);
+  }
+
+  @Override
+  public void setNormalBlending() {
+    flush();
+    gl.glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   }
 
   @Override

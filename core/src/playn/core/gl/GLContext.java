@@ -450,4 +450,7 @@ public abstract class GLContext {
 
   protected abstract GLShader quadShader();
   protected abstract GLShader trisShader();
+
+  public abstract void setMaskBlending();
+  public abstract void setNormalBlending();
 }

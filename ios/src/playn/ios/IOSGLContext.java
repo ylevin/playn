@@ -301,6 +301,16 @@ public class IOSGLContext extends GLContext {
     return trisShader;
   }
 
+  // TODO: Implement masking for iOS.
+
+  @Override public void setMaskBlending() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override public void setNormalBlending() {
+    throw new UnsupportedOperationException();
+  }
+
   void updateTexture(int tex, CGImage image) {
     int width = image.get_Width(), height = image.get_Height();
     if (width == 0 || height == 0) {
