@@ -42,7 +42,6 @@ public class GL20Context extends GLContext {
     super(platform, scaleFactor);
     this.gl = gl;
     this.checkErrors = checkErrors;
-    this.blendMode = GL20BlendMode.NORMAL;
     // create our root transform with our scale factor
     rootXform = createTransform();
     rootXform.uniformScale(scaleFactor);
@@ -51,6 +50,7 @@ public class GL20Context extends GLContext {
   public void init() {
     gl.glDisable(GL_CULL_FACE);
     gl.glEnable(GL_BLEND);
+    blendMode = BlendMode.NORMAL;
     applyBlendMode(blendMode);
     gl.glClearColor(0, 0, 0, 1);
     if (quadShader != null) {
@@ -251,9 +251,8 @@ public class GL20Context extends GLContext {
     return trisShader;
   }
 
-  @Override
-  protected void applyBlendMode(BlendMode mode) {
-    ((GL20BlendMode) mode).apply(gl);
+  @Override protected void setBlendFunc(BlendFactor sFactor, BlendFactor dFactor) {
+    gl.glBlendFunc(toGL(sFactor), toGL(dFactor));
   }
 
   private static int toGL(Filter filter) {
@@ -261,6 +260,23 @@ public class GL20Context extends GLContext {
     default:
     case  LINEAR: return GL_LINEAR;
     case NEAREST: return GL_NEAREST;
+    }
+  }
+
+  private static int toGL(BlendFactor factor) {
+    switch (factor) {
+      case ONE: return GL_ONE;
+      case ZERO: return GL_ZERO;
+      case SRC_ALPHA: return GL_SRC_ALPHA;
+      case DST_ALPHA: return GL_DST_ALPHA;
+      case SRC_COLOR: return GL_SRC_COLOR;
+      case DST_COLOR: return GL_DST_COLOR;
+      case ONE_MINUS_SRC_ALPHA: return GL_ONE_MINUS_SRC_ALPHA;
+      case ONE_MINUS_DST_ALPHA: return GL_ONE_MINUS_DST_ALPHA;
+      case ONE_MINUS_SRC_COLOR: return GL_ONE_MINUS_SRC_COLOR;
+      case ONE_MINUS_DST_COLOR: return GL_ONE_MINUS_DST_COLOR;
+      default:
+        throw new IllegalArgumentException("Unsupported blend factor.");
     }
   }
 

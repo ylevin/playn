@@ -32,6 +32,18 @@ public abstract class GLContext {
   /** Used to configure texture image scaling. */
   public static enum Filter { LINEAR, NEAREST }
 
+  public static enum BlendMode { NORMAL, MASK }
+
+  public static enum BlendFactor {
+    ONE, ZERO,
+    SRC_ALPHA, DST_ALPHA,
+    SRC_COLOR, DST_COLOR,
+    ONE_MINUS_SRC_ALPHA,
+    ONE_MINUS_DST_ALPHA,
+    ONE_MINUS_SRC_COLOR,
+    ONE_MINUS_DST_COLOR,
+  }
+
   /** Used to track and report rendering statistics. */
   public static class Stats {
     public int frames;
@@ -452,7 +464,18 @@ public abstract class GLContext {
   protected abstract GLShader quadShader();
   protected abstract GLShader trisShader();
 
-  protected abstract void applyBlendMode(BlendMode mode);
+  protected abstract void setBlendFunc(BlendFactor sFactor, BlendFactor dFactor);
+
+  protected void applyBlendMode(BlendMode mode) {
+    switch (mode) {
+      default:
+      case NORMAL:
+        setBlendFunc(BlendFactor.ONE, BlendFactor.ONE_MINUS_SRC_ALPHA);
+        break;
+      case MASK:
+        setBlendFunc(BlendFactor.ZERO, BlendFactor.SRC_ALPHA);
+    }
+  }
 
   public void setBlendMode(BlendMode mode) {
     if (blendMode != mode) {

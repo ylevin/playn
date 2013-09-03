@@ -31,7 +31,6 @@ import pythagoras.i.Rectangle;
 import playn.core.InternalTransform;
 import playn.core.StockInternalTransform;
 import playn.core.Tint;
-import playn.core.gl.BlendMode;
 import playn.core.gl.GL20;
 import playn.core.gl.GLBuffer;
 import playn.core.gl.GLContext;
@@ -64,8 +63,8 @@ public class IOSGLContext extends GLContext {
     this.defaultFrameBuffer = defaultFrameBuffer;
     GL.Disable(EnableCap.wrap(EnableCap.CullFace));
     GL.Enable(EnableCap.wrap(EnableCap.Blend));
-    GL.BlendFunc(BlendingFactorSrc.wrap(BlendingFactorSrc.One),
-                 BlendingFactorDest.wrap(BlendingFactorDest.OneMinusSrcAlpha));
+    blendMode = BlendMode.NORMAL;
+    applyBlendMode(blendMode);
     GL.ClearColor(0, 0, 0, 1);
     quadShader = createQuadShader();
     trisShader = new IndexedTrisShader(this);
@@ -302,10 +301,44 @@ public class IOSGLContext extends GLContext {
     return trisShader;
   }
 
-  // TODO: Implement masking for iOS.
-  @Override
-  protected void applyBlendMode(BlendMode mode) {
-    throw new UnsupportedOperationException();
+  @Override protected void setBlendFunc(BlendFactor sFactor, BlendFactor dFactor) {
+    GL.BlendFunc(
+        BlendingFactorSrc.wrap(toSrc(sFactor)),
+        BlendingFactorDest.wrap(toDst(dFactor)));
+  }
+
+  private int toSrc(BlendFactor factor) {
+    switch (factor) {
+      case ZERO: return BlendingFactorSrc.Zero;
+      case ONE : return BlendingFactorSrc.One;
+      case SRC_ALPHA: return BlendingFactorSrc.SrcAlpha;
+      case DST_ALPHA: return BlendingFactorSrc.DstAlpha;
+      case SRC_COLOR: return BlendingFactorSrc.SrcColor;
+      case DST_COLOR: return BlendingFactorSrc.DstColor;
+      case ONE_MINUS_SRC_ALPHA: return BlendingFactorSrc.OneMinusSrcAlpha;
+      case ONE_MINUS_DST_ALPHA: return BlendingFactorSrc.OneMinusDstAlpha;
+      case ONE_MINUS_SRC_COLOR: return BlendingFactorSrc.OneMinusSrcColor;
+      case ONE_MINUS_DST_COLOR: return BlendingFactorSrc.OneMinusDstColor;
+      default:
+        throw new IllegalArgumentException("Unknown blend factor.");
+    }
+  }
+
+  private int toDst(BlendFactor factor) {
+    switch (factor) {
+      case ZERO: return BlendingFactorDest.Zero;
+      case ONE : return BlendingFactorDest.One;
+      case SRC_ALPHA: return BlendingFactorDest.SrcAlpha;
+      case DST_ALPHA: return BlendingFactorDest.DstAlpha;
+      case SRC_COLOR: return BlendingFactorDest.SrcColor;
+      case DST_COLOR: return BlendingFactorDest.DstColor;
+      case ONE_MINUS_SRC_ALPHA: return BlendingFactorDest.OneMinusSrcAlpha;
+      case ONE_MINUS_DST_ALPHA: return BlendingFactorDest.OneMinusDstAlpha;
+      case ONE_MINUS_SRC_COLOR: return BlendingFactorDest.OneMinusSrcColor;
+      case ONE_MINUS_DST_COLOR: return BlendingFactorDest.OneMinusDstColor;
+      default:
+        throw new IllegalArgumentException("Unknown blend factor.");
+    }
   }
 
   void updateTexture(int tex, CGImage image) {
