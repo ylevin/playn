@@ -22,20 +22,15 @@ import java.awt.image.DataBufferInt;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import org.lwjgl.LWJGLException;
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
 import playn.core.Asserts;
 import playn.core.gl.GL20Context;
 
-class JavaGLContext extends GL20Context {
+public class JavaGLContext extends GL20Context {
 
   private final static boolean CHECK_ERRORS = Boolean.getBoolean("playn.glerrors");
-  private final static boolean ENABLE_QUAD_SHADER = Boolean.parseBoolean(
-    System.getProperty("playn.quadshader", "true"));
 
   private ByteBuffer imgBuf = createImageBuffer(1024);
 
@@ -62,36 +57,8 @@ class JavaGLContext extends GL20Context {
     return convertedImage;
   }
 
-  JavaGLContext(JavaPlatform platform, float scaleFactor, int screenWidth, int screenHeight) {
+  public JavaGLContext(JavaPlatform platform, float scaleFactor) {
     super(platform, new JavaGL20(), scaleFactor, CHECK_ERRORS);
-    setSize(screenWidth, screenHeight);
-  }
-
-  @Override
-  public void init() {
-    try {
-      Display.create();
-      super.viewWasResized();
-      super.init();
-    } catch (LWJGLException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  protected void viewWasResized() {
-    try {
-      Display.setDisplayMode(new DisplayMode(defaultFbufWidth, defaultFbufHeight));
-    } catch (LWJGLException e) {
-      throw new RuntimeException(e);
-    }
-    if (Display.isCreated())
-      super.viewWasResized();
-  }
-
-  @Override
-  protected boolean shouldTryQuadShader() {
-    return ENABLE_QUAD_SHADER && super.shouldTryQuadShader();
   }
 
   void updateTexture(int tex, BufferedImage image) {
