@@ -13,22 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package playn.flash;
+package playn.html;
+
+import com.google.gwt.canvas.dom.client.Context2d;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import playn.core.AbstractTextLayout;
-import playn.core.Font;
-import playn.core.TextFormat;
-import pythagoras.f.Rectangle;
 import pythagoras.f.IRectangle;
+import pythagoras.f.Rectangle;
 
+import playn.core.AbstractTextLayout;
+import playn.core.TextFormat;
 import static playn.core.PlayN.graphics;
 
-class FlashTextLayout extends AbstractTextLayout {
+class OldHtmlTextLayout extends AbstractTextLayout implements AbstractHtmlCanvas.Drawable {
 
-  private FlashFontMetrics metrics;
+  private HtmlFontMetrics metrics;
   private List<Line> lines = new ArrayList<Line>();
 
   private static class Line {
@@ -40,10 +41,10 @@ class FlashTextLayout extends AbstractTextLayout {
     }
   }
 
-  FlashTextLayout(FlashCanvas.Context2d ctx, String text, TextFormat format) {
+  OldHtmlTextLayout(Context2d ctx, String text, TextFormat format) {
     super(text, format);
-    Font font = getFont(format);
-    this.metrics = ((FlashGraphics)graphics()).getFontMetrics(font);
+    HtmlFont font = getFont(format);
+    this.metrics = ((HtmlGraphics)graphics()).getFontMetrics(font);
     configContext(ctx);
 
     // normalize newlines in the text (Windows: CRLF -> LF, Mac OS pre-X: CR -> LF)
@@ -61,7 +62,7 @@ class FlashTextLayout extends AbstractTextLayout {
       height = metrics.height * lines.size();
 
     } else {
-      width = ctx.measureText(text).getWidth();
+      width = (float)ctx.measureText(text).getWidth();
       height = metrics.height;
       lines.add(new Line(text, width));
     }
@@ -77,7 +78,7 @@ class FlashTextLayout extends AbstractTextLayout {
 
   @Override
   public IRectangle bounds() {
-    throw new UnsupportedOperationException();
+    return new Rectangle(0, 0, width(), height());
   }
 
   @Override
@@ -87,25 +88,25 @@ class FlashTextLayout extends AbstractTextLayout {
 
   @Override
   public Rectangle lineBounds(int line) {
-    throw new UnsupportedOperationException("Line bounds not supported in Flash backend."); // TODO
+    throw new UnsupportedOperationException("Line bounds not supported in HTML backend."); // TODO
   }
 
   @Override
   public float ascent() {
-    throw new UnsupportedOperationException("Text ascent not supported in Flash backend."); // TODO
+    throw new UnsupportedOperationException("Text ascent not supported in HTML backend."); // TODO
   }
 
   @Override
   public float descent() {
-    throw new UnsupportedOperationException("Text descent not supported in Flash backend."); // TODO
+    throw new UnsupportedOperationException("Text descent not supported in HTML backend."); // TODO
   }
 
   @Override
   public float leading() {
-    throw new UnsupportedOperationException("Text leading not supported in Flash backend."); // TODO
+    throw new UnsupportedOperationException("Text leading not supported in HTML backend."); // TODO
   }
 
-  void stroke(FlashCanvas.Context2d ctx, float x, float y) {
+  public void stroke(Context2d ctx, float x, float y) {
     configContext(ctx);
     float ypos = 0;
     for (Line line : lines) {
@@ -114,7 +115,7 @@ class FlashTextLayout extends AbstractTextLayout {
     }
   }
 
-  void fill(FlashCanvas.Context2d ctx, float x, float y) {
+  public void fill(Context2d ctx, float x, float y) {
     configContext(ctx);
     float ypos = 0;
     for (Line line : lines) {
@@ -123,26 +124,25 @@ class FlashTextLayout extends AbstractTextLayout {
     }
   }
 
-  void configContext(FlashCanvas.Context2d ctx) {
-    Font font = getFont(format);
-    String italic = "normal";
-    String bold = "normal";
+  void configContext(Context2d ctx) {
+    HtmlFont font = getFont(format);
+    String style = "";
     switch (font.style()) {
-      case BOLD:        bold = "bold";   break;
-      case ITALIC:      italic = "italic"; break;
-      case BOLD_ITALIC: bold = "bold"; italic = "italic"; break;
-      default: break; // nada
+    case BOLD:        style = "bold";   break;
+    case ITALIC:      style = "italic"; break;
+    case BOLD_ITALIC: style = "bold italic"; break;
+    default: break; // nada
     }
 
-    ctx.setFont(italic + " " + bold + " " + font.size() + " " + font.name());
-    ctx.setTextBaseline(FlashCanvas.Context2d.TextBaseline.TOP.getValue());
+    ctx.setFont(style + " " + font.size() + "px " + font.name());
+    ctx.setTextBaseline(Context2d.TextBaseline.TOP);
   }
 
-  Font getFont(TextFormat format) {
-    return format.font == null ? FlashFont.DEFAULT : format.font;
+  HtmlFont getFont(TextFormat format) {
+    return format.font == null ? HtmlFont.DEFAULT : (HtmlFont)format.font;
   }
 
-  int measureLine(FlashCanvas.Context2d ctx, String[] words, int idx) {
+  int measureLine(Context2d ctx, String[] words, int idx) {
     // we always put at least one word on a line
     String line = words[idx++];
     int startIdx = idx;
